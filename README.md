@@ -27,17 +27,38 @@ everything inside, then shows you:
 - 🗂 **A breakdown by file type**, and 🕰 **large files untouched for a year**.
 - ⬇ **CSV, JSON and clipboard exports**, because the useful thing to leave with
   is a list.
+- 💾 **A download button that gives you the whole app as one file.** Keep it,
+  read it, run it from your own disk forever.
+
+## You don't have to trust the web page
+
+A web page asking to read your disk is a reasonable thing to be suspicious of,
+so Strata ships itself. Press **Download Strata** and you get a single
+`strata.html` — the entire app, no installer, no dependencies, nothing to
+unpack. Double-click it and it behaves exactly as the hosted version does, with
+your Wi-Fi off if you like.
+
+The downloaded copy is not the same bytes as the page:
+
+- **The page-view counter is stripped out**, so it makes **no network requests
+  at all**. Verified by opening the saved file with a request log attached:
+  zero requests, zero external references.
+- **It is captured before anything is scanned**, so it can never contain the
+  names of your files.
+- It flags itself with `data-offline="1"` and says on screen that it came off
+  your disk rather than the internet.
 
 ## Why this instead of a native cleaner
 
 |                        | Strata                         | Typical native cleaner        |
 | ---------------------- | ------------------------------ | ----------------------------- |
 | Platforms              | macOS, Windows, Linux          | usually one                   |
-| Install                | none — it is a web page        | download, install, notarise   |
+| Install                | none, or one saved HTML file   | download, install, notarise   |
 | Price                  | free, MIT                      | usually paid                  |
 | Duplicate detection    | content hash, three stages     | often name/size only, if any  |
 | Sees your files        | never leaves the tab           | trust the vendor              |
 | Deletes your files     | **never, deliberately**        | yes, often permanently        |
+| Auditable              | one readable file you can keep | a signed binary               |
 
 ## What it will not do
 
@@ -92,12 +113,13 @@ drive.
 node strata.test.mjs
 ```
 
-91 checks, run against the engine extracted from `index.html` itself so they
+109 checks, run against the engine extracted from `index.html` itself so they
 cannot drift from what ships. About half are about what Strata refuses to
 claim — that two same-sized files are not duplicates, that files sharing only
 their first 64 KB are not duplicates, that an unreadable folder is reported
-rather than dropped, and that the page never promises the deleting and system
-monitoring a browser cannot do.
+rather than dropped, that the downloadable copy carries no beacon and no file
+names, and that the page never promises the deleting and system monitoring a
+browser cannot do.
 
 ## Licence
 

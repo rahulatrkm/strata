@@ -191,6 +191,11 @@
       &mdash; and your files never leave your device.
     </p>
     <div class="trust"><span>No upload</span><span>No install</span><span>No account</span><span>Any OS</span><span>Open source</span></div>
+    <div class="notice info offline-note" id="offlineNote" hidden>
+      <b>This is your own saved copy of Strata.</b> It came off your disk, not the internet
+      &mdash; there is no page counter in it and nothing in it can reach the network. It will keep
+      working for as long as you keep the file.
+    </div>
   </header>
 
   <section class="panel" id="start">
@@ -209,6 +214,24 @@
     <p class="hint">
       Nothing is uploaded and nothing about your disk is saved in your browser. Close the tab and
       Strata forgets everything it read.
+    </p>
+  </section>
+
+  <section class="panel" id="keep">
+    <h2>Rather not trust a web page?</h2>
+    <p class="hint">
+      Reasonable. Download Strata as a single file and run it from your own disk instead. It is the
+      whole app &mdash; one HTML file, no installer, no dependencies, nothing to unpack. Open it by
+      double-clicking, with your Wi-Fi off if you like, and it behaves exactly as it does here.
+    </p>
+    <div class="row">
+      <button class="btn" id="save" type="button">Download Strata (one file)</button>
+      <a class="btn ghost" href="https://github.com/rahulatrkm/strata" target="_blank" rel="noopener">Read the source first</a>
+    </div>
+    <p class="hint" id="saveStatus" role="status"></p>
+    <p class="hint">
+      The copy you download has the page counter removed, so it makes <b>no network requests at
+      all</b>. It is captured before anything is scanned, so it can never contain your file names.
     </p>
   </section>
 
@@ -365,6 +388,10 @@
         carries no identifier and nothing about your disk, it honours Do Not Track and Global Privacy
         Control, and blocking it changes nothing about how Strata works.
       </p>
+      <p>
+        If you would rather not take any of that on trust, <b>download the file</b> and run it from your
+        own disk. That copy has the counter stripped out and makes no requests whatsoever.
+      </p>
     </details>
     <details>
       <summary>Which browsers work?</summary>
@@ -427,6 +454,37 @@
 
 <script>
 "use strict";
+
+/* ============================================================ offline copy */
+
+/*
+ * Taken here, at the top of the first script, for two reasons that matter:
+ * the DOM has not been touched yet, so a saved copy can never contain the
+ * names of files someone went on to scan; and the view-counter script below
+ * has not been parsed yet, so the copy carries no beacon either.
+ */
+const PRISTINE_HTML = (typeof document !== "undefined" && document.documentElement)
+  ? "<!DOCTYPE html>\n" + document.documentElement.outerHTML
+  : "";
+
+/**
+ * The saved build: flagged as offline, with any page counter removed.
+ *
+ * The marker strings are assembled rather than written out, because a literal
+ * would appear in this script's own source and the search would then match
+ * itself and cut the engine out of the copy.
+ */
+function offlineDocument(source){
+  let out = String(source);
+  const open = "<scr" + "ipt", close = "</scr" + "ipt>", marker = "data-" + "count";
+  for (let i = out.indexOf(marker); i !== -1; i = out.indexOf(marker)){
+    const start = out.lastIndexOf(open, i);
+    const end = out.indexOf(close, i);
+    if (start === -1 || end === -1) break;
+    out = out.slice(0, start) + out.slice(end + close.length);
+  }
+  return out.replace(/<html(\s[^>]*)?>/, (m, attrs) => "<html" + (attrs || "") + ' data-offline="1">');
+}
 
 /* ============================================================ units */
 
@@ -1348,6 +1406,16 @@ if (typeof document !== "undefined" && document.getElementById){
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
+
+    /* ---------------- keeping your own copy ---------------- */
+
+    if (document.documentElement.dataset.offline) $("offlineNote").hidden = false;
+
+    $("save").addEventListener("click", () => {
+      download("strata.html", offlineDocument(PRISTINE_HTML), "text/html");
+      $("saveStatus").textContent =
+        "Saved strata.html \u2014 open it from your disk any time, with or without a network.";
+    });
 
     $("expCsv").addEventListener("click", () => {
       if (!model) return;
