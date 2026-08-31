@@ -269,6 +269,10 @@
         <h3>Junctions are never followed</h3>
         <p>A link pointing back up its own tree would loop forever and double-count. Strata reports links rather than walking through them.</p>
       </div>
+      <div>
+        <h3>It needs nothing from outside</h3>
+        <p>No update check, no licence server, no telemetry, no account, and no .NET to install. Measured while scanning: no connections and not one networking library loaded. Only Windows itself reaches out, to check an unsigned download the first time you run it.</p>
+      </div>
     </div>
     <p class="hint">
       <b>macOS and Linux: not yet.</b> The scanning engine is platform-neutral .NET and a build for

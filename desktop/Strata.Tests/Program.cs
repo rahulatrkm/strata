@@ -343,6 +343,82 @@ try
         }
         return null;
     }
+
+    Group("it needs nothing from outside the machine");
+    // Strata is a local tool. No update check, no licence server, no telemetry,
+    // no analytics. That is only true for as long as nobody adds one, so the
+    // source is checked rather than trusted.
+    var desktopRoot = appDir is null ? null : Path.GetDirectoryName(appDir);
+    if (desktopRoot is null)
+    {
+        Skipped("network scan", "desktop sources not next door");
+    }
+    else
+    {
+        string[] networkApis =
+        [
+            "HttpClient", "WebClient", "HttpWebRequest", "WebRequest", "System.Net",
+            "Socket", "TcpClient", "UdpClient", "Dns.", "WebSocket", "SmtpClient",
+            "DownloadFile", "DownloadString",
+        ];
+        var found = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(desktopRoot, "*.cs", SearchOption.AllDirectories))
+        {
+            if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") ||
+                file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}") ||
+                file.EndsWith("Program.cs")) continue;      // this file names them all
+            var text = File.ReadAllText(file);
+            foreach (var api in networkApis)
+                if (text.Contains(api)) found.Add($"{Path.GetFileName(file)}:{api}");
+        }
+        Ok("no source file can reach the network", found.Count == 0, string.Join(", ", found));
+
+        var projects = Directory.EnumerateFiles(desktopRoot, "*.csproj", SearchOption.AllDirectories).ToList();
+        var withPackages = projects.Where(p => File.ReadAllText(p).Contains("PackageReference")).ToList();
+        Ok("and nothing is pulled in from a package feed", withPackages.Count == 0,
+            string.Join(", ", withPackages.Select(Path.GetFileName)));
+        Ok("there are three projects and no more", projects.Count == 3,
+            string.Join(", ", projects.Select(Path.GetFileName)));
+
+        // Only shell32 (the Recycle Bin) and kernel32 (attaching a console).
+        var imports = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(desktopRoot, "*.cs", SearchOption.AllDirectories))
+        {
+            if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") ||
+                file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")) continue;
+            foreach (System.Text.RegularExpressions.Match m in
+                     System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(file), @"DllImport\(""([^""]+)"""))
+                imports.Add(m.Groups[1].Value.ToLowerInvariant());
+        }
+        var unexpected = imports.Distinct().Where(d => d is not ("shell32.dll" or "kernel32.dll")).ToList();
+        Ok("it calls into Windows for the Recycle Bin and nothing surprising",
+            unexpected.Count == 0, string.Join(", ", unexpected));
+    }
+
+    Group("the engine is not tied to Windows");
+    // The claim on the page is that a macOS build would be a new window on this
+    // same engine rather than a rewrite. That is only honest if the engine
+    // genuinely carries no Windows types.
+    var coreDir = desktopRoot is null ? null : Path.Combine(desktopRoot, "Strata.Core");
+    if (coreDir is null || !Directory.Exists(coreDir))
+    {
+        Skipped("engine portability", "Strata.Core sources not next door");
+    }
+    else
+    {
+        var windowsOnly = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(coreDir, "*.cs", SearchOption.AllDirectories))
+        {
+            if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") ||
+                file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")) continue;
+            var text = File.ReadAllText(file);
+            foreach (var api in new[] { "DllImport", "System.Windows", "Microsoft.Win32", "Registry" })
+                if (text.Contains(api)) windowsOnly.Add($"{Path.GetFileName(file)}:{api}");
+        }
+        Ok("the engine has no Windows-only types", windowsOnly.Count == 0, string.Join(", ", windowsOnly));
+        Ok("and the project targets plain .NET, not .NET for Windows",
+            File.ReadAllText(Path.Combine(coreDir, "Strata.Core.csproj")).Contains("<TargetFramework>net10.0</TargetFramework>"));
+    }
 }
 finally
 {

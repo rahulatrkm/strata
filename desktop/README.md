@@ -43,6 +43,47 @@ neither limit, which is what makes cleanup safe rather than frightening.
 - **Anything unreadable is counted and named**, and the total is labelled a
   floor rather than the truth.
 
+## It needs nothing from outside
+
+Strata is a local tool in the strict sense: once the file is on your disk it
+never contacts anything, and it does not need to.
+
+- **No network code at all.** No update check, no licence server, no telemetry,
+  no analytics, no crash reporting. A test scans every source file for
+  `HttpClient`, `System.Net`, sockets and the rest and fails if one appears.
+- **No packages.** Zero `PackageReference` entries — the three projects
+  reference nothing but each other and the .NET base library, so there is no
+  supply chain to trust and nothing is fetched to build it.
+- **Two Windows calls, both local**: `shell32!SHFileOperation` for the Recycle
+  Bin and `kernel32!AttachConsole` so `--selftest` can print. A test fails if a
+  third appears.
+- **No runtime to install.** The published build is self-contained, so .NET is
+  inside the one file.
+- **Measured, not assumed.** Running the published binary — idle, and through a
+  full scan, hash and render — showed **0 TCP connections, 0 UDP endpoints, and
+  no networking DLL loaded at all** (`winhttp`, `wininet`, `ws2_32`, `dnsapi`).
+
+The one thing that does reach the internet is not Strata: **Windows SmartScreen**
+checks the reputation of any unsigned download the first time you run it. That
+is Windows, it happens before Strata's own code runs, and it stops once the
+build is code-signed.
+
+## Why this and the web version both exist
+
+They are not the same program twice for the sake of it. Each can do something
+the other cannot.
+
+- The **web version** needs no download, no trust and no install, and runs on
+  macOS and Linux today. It cannot see a whole drive, and it must never delete,
+  because a browser has no Trash to undo from.
+- The **Windows app** can do both, which is the entire point of it existing.
+
+The honest cost is that the analysis engine is written twice — once in
+JavaScript, once in C#. They are kept in step by two test suites asserting the
+same rules (three-stage duplicate detection, unreadable folders counted rather
+than dropped, folders coloured by what fills them, totals reported as a floor),
+so a drift between them shows up as a failing test rather than as a wrong number.
+
 ## Layout
 
 - `Strata.Core` — scanning, tree, treemap, duplicates, rebuildable folders and
