@@ -235,6 +235,48 @@
     </p>
   </section>
 
+  <section class="panel" id="desktop">
+    <h2>Or install the Windows app</h2>
+    <p class="hint">
+      A browser can only ever see the folders you hand it. The Windows build reads a whole drive
+      &mdash; including the places a web page is not allowed near &mdash; scans far faster, and can
+      actually clean up, because a real application can put things in the <b>Recycle Bin</b> where
+      you can get them back.
+    </p>
+    <div class="row">
+      <a class="btn" href="https://github.com/rahulatrkm/strata/releases/latest/download/Strata.exe">Download for Windows (64-bit)</a>
+      <a class="btn ghost" href="https://github.com/rahulatrkm/strata/releases/latest">Release notes and checksum</a>
+    </div>
+    <p class="hint">
+      One file, about 133&nbsp;MB. Nothing to install and no .NET runtime needed. It is not
+      code-signed yet, so Windows SmartScreen will warn the first time &mdash; choose
+      <b>More info</b> then <b>Run anyway</b>, or check the SHA-256 published with the release first.
+    </p>
+    <div class="cols">
+      <div>
+        <h3>Whole drives, not just folders</h3>
+        <p>Point it at C: and it maps the lot, in parallel, reporting anything Windows refused instead of quietly leaving it out of the total.</p>
+      </div>
+      <div>
+        <h3>Cleanup that can be undone</h3>
+        <p>Everything it removes goes to the Recycle Bin. It refuses drives that have no Recycle Bin, because there a delete would be permanent.</p>
+      </div>
+      <div>
+        <h3>It still refuses the dangerous things</h3>
+        <p>Windows, System32, Program Files, ProgramData, the root of a drive, your profile folder and links are all off limits, whatever their size.</p>
+      </div>
+      <div>
+        <h3>Junctions are never followed</h3>
+        <p>A link pointing back up its own tree would loop forever and double-count. Strata reports links rather than walking through them.</p>
+      </div>
+    </div>
+    <p class="hint">
+      <b>macOS and Linux: not yet.</b> The scanning engine is platform-neutral .NET and a build for
+      them is real work rather than a rewrite, but I will not put up a download I cannot build,
+      sign and test myself. Until then the version on this page runs there today.
+    </p>
+  </section>
+
   <section class="panel hidden" id="scanning" aria-live="polite">
     <h2>Reading your folder…</h2>
     <p class="hint" id="scanStatus">Starting…</p>
@@ -355,12 +397,12 @@
     </p>
     <div class="cols">
       <div>
-        <h3>It never deletes a file</h3>
-        <p>A browser can only delete permanently &mdash; it cannot move anything to the Trash. A cleaner with no undo is not worth the gigabytes, so Strata shows and counts, and you delete where the Trash still protects you.</p>
+        <h3>This page never deletes a file</h3>
+        <p>A browser can only delete permanently &mdash; it cannot move anything to the Trash. A cleaner with no undo is not worth the gigabytes, so this page shows and counts, and you delete where the Trash still protects you. The Windows app can clean up, because it can use the Recycle Bin.</p>
       </div>
       <div>
-        <h3>It does not uninstall apps</h3>
-        <p>Removing an app's leftovers means reaching into <code>~/Library</code> or the Windows registry. A web page cannot, and should not be able to, do that.</p>
+        <h3>Neither version uninstalls apps</h3>
+        <p>Removing an app's leftovers means editing the Windows registry or reaching into <code>~/Library</code>. Guessing at that is how a cleaner breaks the software you still use.</p>
       </div>
       <div>
         <h3>It does not monitor your system</h3>

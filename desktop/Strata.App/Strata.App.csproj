@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Strata</AssemblyName>
+    <RootNamespace>Strata.App</RootNamespace>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <Version>1.0.0</Version>
+    <Product>Strata</Product>
+    <Company>rahulatrkm</Company>
+    <Description>See where your disk space actually went.</Description>
+    <!-- Long paths: a disk tool that cannot read past 260 characters is wrong
+         about exactly the deeply nested folders that fill a drive. -->
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Strata.Core\Strata.Core.csproj" />
+  </ItemGroup>
+
+</Project>

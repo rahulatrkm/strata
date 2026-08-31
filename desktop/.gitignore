@@ -1,0 +1,5 @@
+# Build output. The shipped binary lives on the GitHub release, not in the repo.
+bin/
+obj/
+publish/
+*.user

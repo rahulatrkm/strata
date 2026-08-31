@@ -4,6 +4,10 @@
 
 👉 **Live:** https://rahulatrkm.github.io/strata/
 
+👉 **Windows app:** [download the latest release](https://github.com/rahulatrkm/strata/releases/latest) —
+one file, no installer, no runtime. It reads whole drives and can clean up,
+always to the Recycle Bin. Source and details in [`desktop/`](desktop/README.md).
+
 Every few months a drive fills up and the honest answer to "what is taking the
 space?" turns out to be surprisingly hard to get. The good tools for this are
 native, single-platform and usually paid; the free ones want an installer and a
@@ -64,15 +68,19 @@ The downloaded copy is not the same bytes as the page:
 
 This is the important half, and it is on the page as prominently as the features.
 
-- **It never deletes a file.** A browser can only delete *permanently* — it
-  cannot move anything to the Trash. A cleaner with no undo is not worth the
-  gigabytes, so Strata shows and counts, and you delete in your own file
-  manager where the Trash still protects you.
-- **It does not uninstall apps or remove their leftovers.** That means reaching
-  into `~/Library` or the Windows registry, which a web page cannot and should
-  not be able to do.
-- **It does not monitor CPU, memory or network.** A browser cannot read them.
-- **It will not call a folder clean that it could not read.** Anything the
+- **The web version never deletes a file.** A browser can only delete
+  *permanently* — it cannot move anything to the Trash. A cleaner with no undo
+  is not worth the gigabytes, so the page shows and counts, and you delete in
+  your own file manager where the Trash still protects you.
+- **The Windows app deletes only to the Recycle Bin**, refuses drives that have
+  no Recycle Bin, and refuses Windows, System32, Program Files, ProgramData,
+  drive roots, your profile folder and links. `File.Delete` appears nowhere in
+  it, and a test scans the source to keep it that way.
+- **Neither version uninstalls apps or removes their leftovers.** That means
+  editing the registry or reaching into `~/Library`, and guessing at it is how
+  a cleaner breaks software you still use.
+- **Neither monitors CPU, memory or network.**
+- **Neither will call a folder clean that it could not read.** Anything the
   operating system refused is counted, named and shown, and the total is
   labelled a floor rather than the truth.
 
@@ -110,16 +118,18 @@ drive.
 ## Tests
 
 ```
-node strata.test.mjs
+node strata.test.mjs                          # 116 checks, the web app
+cd desktop && dotnet run --project Strata.Tests  # 70 checks, the desktop engine
+cd desktop && dotnet run --project Strata.App -- --selftest  # 17 checks, the real window
 ```
 
-109 checks, run against the engine extracted from `index.html` itself so they
-cannot drift from what ships. About half are about what Strata refuses to
-claim — that two same-sized files are not duplicates, that files sharing only
-their first 64 KB are not duplicates, that an unreadable folder is reported
-rather than dropped, that the downloadable copy carries no beacon and no file
-names, and that the page never promises the deleting and system monitoring a
-browser cannot do.
+The web checks run against the engine extracted from `index.html` itself so they
+cannot drift from what ships. About half of all of it is about what Strata
+refuses to claim — that two same-sized files are not duplicates, that files
+sharing only their first 64 KB are not duplicates, that a junction is never
+followed, that an unreadable folder is reported rather than dropped, that the
+downloadable copy carries no beacon and no file names, and that the cleanup
+guard will not let the operating system's own folders be deleted.
 
 ## Licence
 
